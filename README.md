@@ -2,5 +2,6 @@
 Team 2's semester long project for IT391.
 
 
-Contributor's
+# Contributors
+
 Adam C.
