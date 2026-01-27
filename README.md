@@ -4,4 +4,4 @@ Team 2's semester long project for IT391.
 
 # Contributors
 
-Adam C
+Adam C, Alex FP
