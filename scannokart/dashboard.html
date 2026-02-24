@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScannoKart Dashboard</title>
+
+  <!-- FIXED CSS PATH -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="dashboard-page">
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="nav-left">
+      <div class="logo-circle">SK</div>
+      <span class="logo-text">ScannoKart</span>
+    </div>
+
+    <div class="nav-right">
+      <span class="user-name">John Doe</span>
+      <div class="user-avatar">JD</div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="container">
+
+    <div class="page-header">
+      <h1>Your Groceries</h1>
+
+      <select class="filter">
+        <option>All Items</option>
+        <option>Expiring Soon</option>
+        <option>Expired</option>
+      </select>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state">
+      <div class="empty-icon">📦</div>
+      <h2>Your pantry is empty</h2>
+      <p>
+        Start adding items by scanning receipts, uploading images,
+        or entering them manually.
+      </p>
+      <a href="#" class="link-reset">Reset Demo Data</a>
+    </div>
+
+  </main>
+
+  <!-- FLOATING BUTTONS -->
+  <button class="fab-help">?</button>
+  <button class="fab-add">+</button>
+
+</body>
+</html>
