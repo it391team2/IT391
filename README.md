@@ -19,6 +19,7 @@ clean.py Usage
 ```sh
 python3 clean.py system_results.txt
 ```
+clean.py output
 ```
 Shop-No S+ 319 North Street
 Norma1
