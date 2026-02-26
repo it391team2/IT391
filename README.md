@@ -55,6 +55,38 @@ Capture Method:Wave
 $034 9.750 @9 750% 1O
 ```
 
+**ScannoKart – Front-End Overview**
+
+
+**Authentication & Dashboard Flow**
+
+The current front-end build of ScannoKart includes a fully functional login interface that transitions seamlessly into the main dashboard.
+
+**Login Page**
+
+Users are presented with a clean authentication screen.
+
+The system verifies whether an account exists in the browser before allowing access.
+
+Login attempts will fail if the account has not been created.
+
+This prevents unauthorized access to the dashboard environment.
+
+**Account Requirement**
+
+A user must first create an account before logging in.
+
+The application validates stored account credentials within the browser.
+
+If no matching account exists, access is denied.
+
+**Dashboard Transition**
+
+Upon successful login, users are automatically redirected to the ScannoKart Main Dashboard.
+
+The logged-in user’s name is displayed in the top-right corner of the dashboard interface.
+
+This provides clear session visibility and confirms active authentication.
 # Contributors
 
 Adam C, Alex FP, Ethan Causa, William Slaughter, Jackson Newton, Juan Munoz 
