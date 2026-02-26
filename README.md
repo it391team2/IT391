@@ -1,21 +1,17 @@
 # IT391
 Team 2's semester long project for IT391.
 
-# WEBSITE 
-ADD WEBSITE STUFF HERE
-
-
 # OCR Usage
 
 Install Guide for OpenOCR: https://github.com/Topdu/OpenOCR/blob/main/docs/openocr.md#quick-start
 
-Running OpenOCR -- output is non human readable and will need to be cleaned with clean.py
+**Running OpenOCR** -- output is non human readable and will need to be cleaned with clean.py
 ```sh
 # With visualization
 openocr --task ocr --input_path path/to/img --is_vis
 ```
 
-Example of Visualisation
+**Example of Visualisation**
 <img width="2430" height="1620" alt="image" src="https://github.com/user-attachments/assets/16cc6891-d906-4c7a-81ba-e3cc0d5f0f21" />
 
 clean.py Usage
@@ -55,7 +51,9 @@ Capture Method:Wave
 $034 9.750 @9 750% 1O
 ```
 
-**ScannoKart – Front-End Overview**
+
+
+# ScannoKart – Front-End Overview
 
 
 **Authentication & Dashboard Flow**
