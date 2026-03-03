@@ -14,11 +14,11 @@ openocr --task ocr --input_path path/to/img --is_vis
 **Example of Visualisation**
 <img width="2430" height="1620" alt="image" src="https://github.com/user-attachments/assets/16cc6891-d906-4c7a-81ba-e3cc0d5f0f21" />
 
-clean.py Usage
+**clean.py Usage**
 ```sh
 python3 clean.py system_results.txt
 ```
-clean.py output
+**clean.py output**
 ```
 Shop-No S+ 319 North Street
 Norma1
@@ -85,6 +85,8 @@ Upon successful login, users are automatically redirected to the ScannoKart Main
 The logged-in user’s name is displayed in the top-right corner of the dashboard interface.
 
 This provides clear session visibility and confirms active authentication.
+
+
 # Contributors
 
 Adam C, Alex FP, Ethan Causa, William Slaughter, Jackson Newton, Juan Munoz 
