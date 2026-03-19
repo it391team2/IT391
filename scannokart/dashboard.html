@@ -4,32 +4,82 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ScannoKart Dashboard</title>
-
-  <!-- FIXED CSS PATH -->
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Manual Input Modal Styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 400px;
+    }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: black; }
+    .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; color: black; }
+    .form-group input::placeholder { color: #666; opacity: 1; }
+    .optional-label { font-weight: normal; font-size: 0.8rem; color: #888; margin-left: 5px; }
+
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .btn-cancel { background: #eee; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; color: black; }
+    .btn-save { background: #2ecc71; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
+
+    /* Pantry List Styles */
+    #pantryList { list-style: none; padding: 0; margin-top: 20px; }
+    .pantry-item {
+      background: white;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      border: 1px solid #eee;
+    }
+    .pantry-item-info { display: flex; flex-direction: column; }
+    .pantry-item-name { font-weight: bold; color: #333; }
+    .pantry-item-details { color: #666; font-size: 0.9rem; }
+    
+    .btn-delete {
+      background: none;
+      border: none;
+      color: #e74c3c;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 5px 10px;
+      border-radius: 4px;
+    }
+    .btn-delete:hover { background: #fdf2f2; }
+  </style>
 </head>
 
 <body class="dashboard-page">
 
-  <!-- NAVBAR -->
   <header class="navbar">
     <div class="nav-left">
       <div class="logo-circle">SK</div>
       <span class="logo-text">ScannoKart</span>
     </div>
-
     <div class="nav-right">
-      <span class="user-name">John Doe</span>
-      <div class="user-avatar">JD</div>
+      <span class="user-name" id="userName"></span>
+      <div class="user-avatar" id="userAvatar"></div>
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
   <main class="container">
-
     <div class="page-header">
       <h1>Your Groceries</h1>
-
       <select class="filter">
         <option>All Items</option>
         <option>Expiring Soon</option>
@@ -37,22 +87,138 @@
       </select>
     </div>
 
-    <!-- EMPTY STATE -->
-    <div class="empty-state">
-      <div class="empty-icon">📦</div>
-      <h2>Your pantry is empty</h2>
-      <p>
-        Start adding items by scanning receipts, uploading images,
-        or entering them manually.
-      </p>
-      <a href="#" class="link-reset">Reset Demo Data</a>
+    <div id="pantryDisplay">
+      <div id="emptyState" class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h2>Your pantry is empty</h2>
+        <p>Start adding items by scanning receipts, uploading images, or entering them manually.</p>
+      </div>
+      <ul id="pantryList"></ul>
     </div>
-
   </main>
 
-  <!-- FLOATING BUTTONS -->
-  <button class="fab-help">?</button>
-  <button class="fab-add">+</button>
+<a href="about-us.html" class="fab-help">?</a>
+
+<div class="fab-container">
+  <div class="fab-menu" id="fabMenu">
+    <button class="menu-item" onclick="openManualInput()">
+      <span>Manual Input</span>
+      <span class="icon">✍️</span>
+    </button>
+    <button class="menu-item" onclick="alert('Image Upload Clicked')">
+      <span>Upload Image</span>
+      <span class="icon">📷</span>
+    </button>
+  </div>
+  <button class="fab-add" id="fabAdd">+</button>
+</div>
+
+<div id="manualModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3>Add New Item</h3>
+    <div class="form-group">
+      <label>Food Item</label>
+      <input type="text" id="foodItem" placeholder="e.g. Eggs" required>
+    </div>
+    <div class="form-group">
+      <label>Amount (Qty)</label>
+      <input type="number" id="foodAmount" placeholder="e.g. 1" required>
+    </div>
+    <div class="form-group">
+      <label>Unit/Type <span class="optional-label">(Optional)</span></label>
+      <input type="text" id="foodType" placeholder="e.g. 12 pack, Large, or 1L">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeManualInput()">Cancel</button>
+      <button class="btn-save" onclick="saveManualInput()">Add to List</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const CURRENT_KEY = "sk_current_user";
+  const user = JSON.parse(localStorage.getItem(CURRENT_KEY));
+
+  if (!user) {
+    window.location.href = "index.html";
+  } else {
+    document.getElementById("userName").textContent = user.name;
+    document.getElementById("userAvatar").textContent = user.initials;
+  }
+
+  // FAB Toggle
+  const fabAdd = document.getElementById('fabAdd');
+  const fabMenu = document.getElementById('fabMenu');
+  fabAdd.addEventListener('click', (e) => {
+    e.stopPropagation(); 
+    fabMenu.classList.toggle('show');
+    fabAdd.classList.toggle('active');
+  });
+  document.addEventListener('click', () => {
+    fabMenu.classList.remove('show');
+    fabAdd.classList.remove('active');
+  });
+
+  const modal = document.getElementById('manualModal');
+  const emptyState = document.getElementById('emptyState');
+  const pantryList = document.getElementById('pantryList');
+
+  function openManualInput() {
+    modal.style.display = 'flex';
+    fabMenu.classList.remove('show');
+  }
+
+  function closeManualInput() {
+    modal.style.display = 'none';
+  }
+
+  function saveManualInput() {
+    const item = document.getElementById('foodItem').value;
+    const amount = document.getElementById('foodAmount').value;
+    const type = document.getElementById('foodType').value;
+
+    // Item and Amount are required
+    if(item && amount) {
+      emptyState.style.display = 'none';
+
+      const li = document.createElement('li');
+      li.className = 'pantry-item';
+      
+      // Build the detail string: show type only if it exists
+      const typeDisplay = type ? ` | ${type}` : '';
+
+      li.innerHTML = `
+        <div class="pantry-item-info">
+          <span class="pantry-item-name">${item}</span>
+          <span class="pantry-item-details">Qty: ${amount}${typeDisplay}</span>
+        </div>
+        <button class="btn-delete" onclick="deleteItem(this)">🗑️</button>
+      `;
+
+      pantryList.appendChild(li);
+
+      closeManualInput();
+      // Clear all fields
+      document.getElementById('foodItem').value = '';
+      document.getElementById('foodAmount').value = '';
+      document.getElementById('foodType').value = '';
+    } else {
+      alert("Food Item and Amount are required!");
+    }
+  }
+
+  function deleteItem(btn) {
+    btn.parentElement.remove();
+    if (pantryList.children.length === 0) {
+      emptyState.style.display = 'block';
+    }
+  }
+
+  function resetPantry() {
+    pantryList.innerHTML = '';
+    emptyState.style.display = 'block';
+  }
+</script>
 
 </body>
 </html>
