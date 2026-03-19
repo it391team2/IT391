@@ -1,4 +1,4 @@
-// TEMPORARY PLAINTEXT LOGIN FOR CLASS ONLY
+
 
 document.getElementById("loginForm").addEventListener("submit", function(e) {
     e.preventDefault();
