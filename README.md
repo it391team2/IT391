@@ -86,6 +86,10 @@ The logged-in user’s name is displayed in the top-right corner of the dashboar
 
 This provides clear session visibility and confirms active authentication.
 
+# AI Integration (Shelf-life Estimation)
+nginx 1.24.0-2ubuntu7.6 
+npm install @google/generative-ai express
+
 
 # Contributors
 
