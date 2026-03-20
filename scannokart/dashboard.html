@@ -4,9 +4,105 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ScannoKart Dashboard</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="style.css">
   <style>
-    /* Manual Input Modal Styles */
+    /* --- Base Layout --- */
+    body.dashboard-page { background: #f4f7f6; margin: 0; font-family: sans-serif; }
+    
+    main.container { 
+      max-width: 800px; 
+      margin: 40px auto; 
+      padding: 20px; 
+      text-align: center;
+    }
+
+    /* --- Teal Color Theme --- */
+    :root {
+      --primary-teal: #4db6ac;
+      --dark-teal: #00897b;
+    }
+
+    /* --- FAB & Menu Styling --- */
+    .fab-container {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      z-index: 2000;
+    }
+
+    .fab-menu {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 15px;
+      margin-right: 45px; 
+    }
+
+    .fab-menu.show {
+      display: flex;
+    }
+
+    .menu-item {
+      background: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      color: #333;
+      font-weight: bold;
+      white-space: nowrap;
+      transform: translateX(-40px); 
+      transition: transform 0.2s ease;
+    }
+
+    .menu-item:hover {
+      transform: translateX(-45px);
+      background-color: #f9f9f9;
+    }
+
+    .fab-add {
+      width: 60px;
+      height: 60px;
+      background-color: var(--primary-teal);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      font-size: 32px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2001;
+    }
+
+    /* --- About Us Circle --- */
+    .fab-help {
+      position: fixed;
+      bottom: 110px; 
+      right: 35px;
+      width: 50px;
+      height: 50px;
+      background-color: #e0f2f1;
+      color: var(--dark-teal);
+      text-decoration: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+
+    /* --- Modal & List Styling --- */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -15,52 +111,38 @@
       background: rgba(0, 0, 0, 0.5);
       justify-content: center;
       align-items: center;
-      z-index: 1000;
+      z-index: 3000;
     }
     .modal-content {
       background: white;
-      padding: 24px;
-      border-radius: 12px;
+      padding: 30px;
+      border-radius: 15px;
       width: 90%;
       max-width: 400px;
     }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: black; }
-    .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; color: black; }
-    .form-group input::placeholder { color: #666; opacity: 1; }
-    .optional-label { font-weight: normal; font-size: 0.8rem; color: #888; margin-left: 5px; }
+    .form-group { margin-bottom: 18px; text-align: left; }
+    .form-group label { display: block; margin-bottom: 6px; font-weight: bold; }
+    .form-group input { 
+      width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
+      box-sizing: border-box; color: black; font-size: 16px;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+    .btn-cancel { background: #eee; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+    .btn-save { background: var(--primary-teal); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-    .btn-cancel { background: #eee; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; color: black; }
-    .btn-save { background: #2ecc71; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
-
-    /* Pantry List Styles */
-    #pantryList { list-style: none; padding: 0; margin-top: 20px; }
+    #pantryList { list-style: none; padding: 0; margin-top: 30px; }
     .pantry-item {
       background: white;
-      padding: 15px;
-      margin-bottom: 10px;
-      border-radius: 8px;
+      padding: 15px 20px;
+      margin-bottom: 12px;
+      border-radius: 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      border: 1px solid #eee;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      text-align: left;
     }
-    .pantry-item-info { display: flex; flex-direction: column; }
-    .pantry-item-name { font-weight: bold; color: #333; }
-    .pantry-item-details { color: #666; font-size: 0.9rem; }
-    
-    .btn-delete {
-      background: none;
-      border: none;
-      color: #e74c3c;
-      font-size: 1.2rem;
-      cursor: pointer;
-      padding: 5px 10px;
-      border-radius: 4px;
-    }
-    .btn-delete:hover { background: #fdf2f2; }
+    .btn-delete { background: none; border: none; cursor: pointer; font-size: 1.2rem; }
   </style>
 </head>
 
@@ -68,9 +150,10 @@
 
   <header class="navbar">
     <div class="nav-left">
-      <div class="logo-circle">SK</div>
+      <div class="logo-circle" style="background: var(--primary-teal)">SK</div>
       <span class="logo-text">ScannoKart</span>
     </div>
+
     <div class="nav-right">
       <span class="user-name" id="userName"></span>
       <div class="user-avatar" id="userAvatar"></div>
@@ -79,145 +162,235 @@
 
   <main class="container">
     <div class="page-header">
-      <h1>Your Groceries</h1>
-      <select class="filter">
-        <option>All Items</option>
-        <option>Expiring Soon</option>
-        <option>Expired</option>
-      </select>
+      <h1 style="color: #333;">Your Groceries</h1>
     </div>
 
     <div id="pantryDisplay">
       <div id="emptyState" class="empty-state">
         <div class="empty-icon">📦</div>
-        <h2>Your pantry is empty</h2>
-        <p>Start adding items by scanning receipts, uploading images, or entering them manually.</p>
+        <h2 style="color: #444;">Your pantry is empty</h2>
+        <p style="color: #666;">Items added here are saved to your browser cookies.</p>
+        <a href="#" class="link-reset" onclick="resetPantry()" style="color: var(--primary-teal); font-weight: bold; text-decoration: none;">Clear All Data</a>
       </div>
+	<div style="margin: 20px 0; text-align: right;">
+ 	 <button id="predictBtn" class="btn-save" style="background: #2bb39a;" onclick="updatePantryExpirations()">
+   	 ✨ Predict Expirations
+ 	 </button>
+	</div>
+
+<div id="expiration-report" style="display:none; background: #e0f2f1; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: left; border: 1px solid #2bb39a;">
+  <h3 style="margin-top:0; color: #00897b;">AI Expiration Forecast</h3>
+  <ul id="expiration-list" style="list-style: none; padding: 0; margin: 0;"></ul>
+</div>
       <ul id="pantryList"></ul>
     </div>
   </main>
 
-<a href="about-us.html" class="fab-help">?</a>
+  <a href="about-us.html" class="fab-help" title="About Us">?</a>
 
-<div class="fab-container">
-  <div class="fab-menu" id="fabMenu">
-    <button class="menu-item" onclick="openManualInput()">
-      <span>Manual Input</span>
-      <span class="icon">✍️</span>
-    </button>
-    <button class="menu-item" onclick="alert('Image Upload Clicked')">
-      <span>Upload Image</span>
-      <span class="icon">📷</span>
-    </button>
+  <div class="fab-container">
+    <div class="fab-menu" id="fabMenu">
+      <button class="menu-item" onclick="openManualInput()">
+        <span>Manual Input</span>
+        <span class="icon">✍️</span>
+      </button>
+      <button class="menu-item" onclick="alert('Image Upload feature coming soon!')">
+        <span>Upload Image</span>
+        <span class="icon">📷</span>
+      </button>
+    </div>
+    <button class="fab-add" id="fabAdd">+</button>
   </div>
-  <button class="fab-add" id="fabAdd">+</button>
-</div>
 
-<div id="manualModal" class="modal-overlay">
-  <div class="modal-content">
-    <h3>Add New Item</h3>
-    <div class="form-group">
-      <label>Food Item</label>
-      <input type="text" id="foodItem" placeholder="e.g. Eggs" required>
-    </div>
-    <div class="form-group">
-      <label>Amount (Qty)</label>
-      <input type="number" id="foodAmount" placeholder="e.g. 1" required>
-    </div>
-    <div class="form-group">
-      <label>Unit/Type <span class="optional-label">(Optional)</span></label>
-      <input type="text" id="foodType" placeholder="e.g. 12 pack, Large, or 1L">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeManualInput()">Cancel</button>
-      <button class="btn-save" onclick="saveManualInput()">Add to List</button>
+  <div id="manualModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="margin-top: 0;">Add New Item</h3>
+      <div class="form-group">
+        <label>Food Item</label>
+        <input type="text" id="foodItem" placeholder="e.g. Apples" required>
+      </div>
+      <div class="form-group">
+        <label>Amount (Qty)</label>
+        <input type="number" id="foodAmount" placeholder="e.g. 6" required>
+      </div>
+      <div class="form-group">
+        <label>Unit/Type (Optional)</label>
+        <input type="text" id="foodType" placeholder="e.g. Pack of 12">
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeManualInput()">Cancel</button>
+        <button class="btn-save" onclick="saveManualInput()">Add to List</button>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
+  // --- Auth Check ---
   const CURRENT_KEY = "sk_current_user";
   const user = JSON.parse(localStorage.getItem(CURRENT_KEY));
-
-  if (!user) {
-    window.location.href = "index.html";
-  } else {
-    document.getElementById("userName").textContent = user.name;
-    document.getElementById("userAvatar").textContent = user.initials;
+  if (!user) { window.location.href = "index.html"; }
+  else {
+    document.getElementById("userName").textContent = user.name || "User";
+    document.getElementById("userAvatar").textContent = user.initials || "U";
   }
 
-  // FAB Toggle
+  // --- Cookie Helpers ---
+  // We use a single cookie "sk_pantry_data" to store all items
+  function setPantryCookie(data) {
+    const d = new Date();
+    d.setTime(d.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 day expiry
+    let expires = "expires=" + d.toUTCString();
+    document.cookie = "sk_pantry_data=" + JSON.stringify(data) + ";" + expires + ";path=/";
+  }
+
+  function getPantryCookie() {
+    let name = "sk_pantry_data=";
+    let decodedCookie = decodeURIComponent(document.cookie);
+    let ca = decodedCookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+      let c = ca[i];
+      while (c.charAt(0) == ' ') { c = c.substring(1); }
+      if (c.indexOf(name) == 0) {
+        return JSON.parse(c.substring(name.length, c.length));
+      }
+    }
+    return [];
+  }
+
+  // --- FAB Toggle ---
   const fabAdd = document.getElementById('fabAdd');
   const fabMenu = document.getElementById('fabMenu');
   fabAdd.addEventListener('click', (e) => {
     e.stopPropagation(); 
     fabMenu.classList.toggle('show');
-    fabAdd.classList.toggle('active');
   });
   document.addEventListener('click', () => {
     fabMenu.classList.remove('show');
-    fabAdd.classList.remove('active');
   });
 
+  // --- Main Logic ---
   const modal = document.getElementById('manualModal');
   const emptyState = document.getElementById('emptyState');
   const pantryList = document.getElementById('pantryList');
+  let myItems = getPantryCookie();
 
-  function openManualInput() {
-    modal.style.display = 'flex';
-    fabMenu.classList.remove('show');
+  // Load items on startup
+  window.onload = renderPantry;
+
+  function renderPantry() {
+    pantryList.innerHTML = '';
+    if (myItems.length === 0) {
+      emptyState.style.display = 'block';
+    } else {
+      emptyState.style.display = 'none';
+      myItems.forEach((item, index) => {
+        const li = document.createElement('li');
+        li.className = 'pantry-item';
+        const typeDisplay = item.type ? ` | ${item.type}` : '';
+        li.innerHTML = `
+          <div class="pantry-item-info">
+            <span class="pantry-item-name">${item.name}</span><br>
+            <span class="pantry-item-details">Qty: ${item.qty}${typeDisplay}</span>
+          </div>
+          <button class="btn-delete" onclick="deleteItem(${index})">🗑️</button>
+        `;
+        pantryList.appendChild(li);
+      });
+    }
   }
 
-  function closeManualInput() {
-    modal.style.display = 'none';
-  }
+  function openManualInput() { modal.style.display = 'flex'; fabMenu.classList.remove('show'); }
+  function closeManualInput() { modal.style.display = 'none'; }
 
   function saveManualInput() {
-    const item = document.getElementById('foodItem').value;
-    const amount = document.getElementById('foodAmount').value;
+    const name = document.getElementById('foodItem').value;
+    const qty = document.getElementById('foodAmount').value;
     const type = document.getElementById('foodType').value;
 
-    // Item and Amount are required
-    if(item && amount) {
-      emptyState.style.display = 'none';
-
-      const li = document.createElement('li');
-      li.className = 'pantry-item';
+    if(name && qty) {
+      const newItem = { name, qty, type };
+      myItems.push(newItem);
+      setPantryCookie(myItems);
+      renderPantry();
       
-      // Build the detail string: show type only if it exists
-      const typeDisplay = type ? ` | ${type}` : '';
-
-      li.innerHTML = `
-        <div class="pantry-item-info">
-          <span class="pantry-item-name">${item}</span>
-          <span class="pantry-item-details">Qty: ${amount}${typeDisplay}</span>
-        </div>
-        <button class="btn-delete" onclick="deleteItem(this)">🗑️</button>
-      `;
-
-      pantryList.appendChild(li);
-
       closeManualInput();
-      // Clear all fields
       document.getElementById('foodItem').value = '';
       document.getElementById('foodAmount').value = '';
       document.getElementById('foodType').value = '';
-    } else {
-      alert("Food Item and Amount are required!");
     }
   }
 
-  function deleteItem(btn) {
-    btn.parentElement.remove();
-    if (pantryList.children.length === 0) {
-      emptyState.style.display = 'block';
-    }
+  function deleteItem(index) {
+    myItems.splice(index, 1);
+    setPantryCookie(myItems);
+    renderPantry();
   }
 
   function resetPantry() {
-    pantryList.innerHTML = '';
-    emptyState.style.display = 'block';
+    myItems = [];
+    setPantryCookie(myItems);
+    renderPantry();
   }
+
+// -- Prediction Logic --
+async function updatePantryExpirations() {
+  const listElement = document.getElementById('expiration-list');
+  const reportContainer = document.getElementById('expiration-report');
+  const predictBtn = document.getElementById('predictBtn');
+
+  // 1. Show loading state
+  reportContainer.style.display = 'block';
+  listElement.innerHTML = '<li>🪄 ScannoKart AI is calculating...</li>';
+  predictBtn.disabled = true;
+
+  try {
+    // 2. Get data from your existing cookie helper
+    const itemsFromCookie = getPantryCookie(); 
+
+    if (itemsFromCookie.length === 0) {
+      listElement.innerHTML = '<li>Your pantry is empty! Add items first.</li>';
+      predictBtn.disabled = false;
+      return;
+    }
+
+    // 3. Send to your estimation.js server (running on port 3000)
+    const response = await fetch('http://100.92.241.25:3000/get-expiration', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: itemsFromCookie })
+    });
+
+    if (!response.ok) throw new Error("Server error");
+
+    const predictions = await response.json();
+
+    // 4. Render the results
+    listElement.innerHTML = ''; 
+    predictions.forEach(item => {
+      const li = document.createElement('li');
+      li.style.padding = "8px 0";
+      li.style.borderBottom = "1px solid #cde8e3";
+      
+      // Highlight if expiring in 3 days or less
+      const isUrgent = item.daysToExpiration <= 3;
+      const color = isUrgent ? "#ef4444" : "#444";
+      const icon = isUrgent ? "⚠️" : "🗓️";
+
+      li.innerHTML = `
+        <span style="color: ${color}; font-weight: ${isUrgent ? 'bold' : 'normal'}">
+          ${icon} ${item.name}: ~${item.daysToExpiration} days remaining
+        </span>
+      `;
+      listElement.appendChild(li);
+    });
+
+  } catch (error) {
+    listElement.innerHTML = '<li style="color: red;">Could not connect to the AI server. Make sure estimation.js is running.</li>';
+    console.error("Fetch error:", error);
+  } finally {
+    predictBtn.disabled = false;
+  }
+}
 </script>
 
 </body>
