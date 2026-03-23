@@ -88,9 +88,41 @@ This provides clear session visibility and confirms active authentication.
 
 # AI Integration (Shelf-life Estimation)
 nginx 1.24.0-2ubuntu7.6 
-npm install @google/generative-ai express
 
+**Requirements**
+```
+$ npm install @google/generative-ai express
+$ npm install cors
+$ npm install dotenv
+```
+Create a .env file and put the following.
+```
+GEMINI_API_KEY=<YOUR_GEMINI_KEY>
+```
 
+**Running estimation.js**
+First Start by installing the estimation.js script and run with the following command
+```
+$ node estimation.js
+// And test with the following line
+$ curl -X POST http://localhost:3000/get-expiration -H "Content-Type: application/json" -d '{"items": [{"name":"Apples","qty":"8"}]}'
+```
+
+We need to run the estimation.js script by itself, you can start it by running the following.
+```
+$ npm install -g pm2
+$ pm2 start estimation.js --name scannokart-api
+$ pm2 startup
+
+```
+
+**AI Model (GEMINI FLASH 2.5)**
+System prompt
+```
+ const prompt = `Analyze this pantry list: ${itemString}. 
+        Return a JSON array of objects with "name" and "daysToExpiration" (as a number).
+        Only return the JSON code, no extra text.`;
+```
 # Contributors
 
 Adam C, Alex FP, Ethan Causa, William Slaughter, Jackson Newton, Juan Munoz 
