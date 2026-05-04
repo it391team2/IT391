@@ -35,9 +35,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_name'] = $user['Full_Name'];
             $_SESSION['user_email'] = $email;
 
-                echo "<pre>";
-                print_r($_SESSION);
-                echo "</pre>";
+	        echo "<pre>";
+	        print_r($_SESSION);
+	        echo "</pre>";
 
             header("Location: dashboard.php"); 
             exit();

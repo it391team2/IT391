@@ -1,29 +1,17 @@
 <?php
-// Start the session to check if the user is logged in
 session_start();
 header('Content-Type: text/html; charset=utf-8');
-// If the session variable 'user_id' is not set, they aren't logged in. Redirect to login.
-if (!isset($_SESSION['user_id'])){
-        echo "<pre>";
-print_r($_SESSION);
-echo "</pre>";
-
-
-    //header("Location: index.html");
+if (!isset($_SESSION['user_id'])) {
+    header("Location: index.html");
     exit();
 }
-
-// Get the user's name from the session
-$userName = $_SESSION['user_name'];
-
-// Calculate initials for the avatar (e.g., "John Doe" -> "JD")
+$userName  = $_SESSION['user_name'];
 $nameParts = explode(" ", $userName);
-$initials = "";
+$initials  = "";
 foreach ($nameParts as $part) {
     $initials .= strtoupper($part[0]);
 }
 $initials = substr($initials, 0, 2);
-/*Dashboard page setup: Enconding, viewport, title and stylesheets*/
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -34,133 +22,70 @@ $initials = substr($initials, 0, 2);
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <style>
-    body.dashboard-page {
-      background-color: #f4f7f6;
-    }
-    .container {
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 20px;
-      text-align: center;
-    }
-    .page-header {
-      text-align: left;
-      margin-bottom: 20px;
-    }
-    .page-header h1 {
-      font-size: 28px;
-      color: #333;
-      font-weight: 700;
-    }
-    .predict-container {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 20px;
-      margin-bottom: 20px;
-    }
-    .predict-btn {
-      background-color: #2bb39a;
-      color: white;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 14px;
-    }
-    .empty-state {
-      margin-top: 60px;
-    }
-    .empty-icon {
-      font-size: 30px;
-      margin-bottom: 10px;
-    }
-    .empty-state h2 {
-      font-size: 22px;
-      color: #333;
-      margin-bottom: 5px;
-    }
-    .empty-state p {
-      color: #777;
-      font-size: 14px;
-    }
-    .link-reset {
-      color: #2bb39a;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 14px;
-    }
+    body.dashboard-page { background-color: #f4f7f6; }
+    .container { max-width: 800px; margin: 40px auto; padding: 20px; text-align: center; }
+    .page-header { text-align: left; margin-bottom: 20px; }
+    .page-header h1 { font-size: 28px; color: #333; font-weight: 700; }
+    .predict-container { display: flex; justify-content: flex-end; margin-top: 20px; margin-bottom: 20px; }
+    .predict-btn { background-color: #2bb39a; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px; }
+    .empty-state { margin-top: 60px; }
+    .empty-icon { font-size: 30px; margin-bottom: 10px; }
+    .empty-state h2 { font-size: 22px; color: #333; margin-bottom: 5px; }
+    .empty-state p { color: #777; font-size: 14px; }
+    .link-reset { color: #2bb39a; text-decoration: none; font-weight: 600; font-size: 14px; }
+    .loading-spinner { text-align: center; padding: 40px; color: #777; font-size: 14px; }
   </style>
 </head>
-
 <body class="dashboard-page">
-//Navigation Bar
   <header class="navbar">
     <div class="nav-left">
-//Website logo and app name
       <div class="logo-circle">SK</div>
       <span class="logo-text">ScannoKart</span>
     </div>
-//Right side: Logged in user info
-<div class="nav-right" style="display: flex; align-items: center; gap: 15px;">
-        <span class="user-name" id="userName">
-                <?php echo $userName; ?>
-        </span>
-//Avatar Circle showing user initials
-        <div class="user-avatar" id="userAvatar">
-                <?php echo $initials; ?>
-        </div>
-</div>
-</header>
-  <main class="container">
-    <div class="page-header">
-      <h1>Your Groceries</h1>
+    <div class="nav-right" style="display: flex; align-items: center; gap: 15px;">
+      <span class="user-name" id="userName"><?php echo htmlspecialchars($userName); ?></span>
+      <div class="user-avatar" id="userAvatar"><?php echo htmlspecialchars($initials); ?></div>
     </div>
-/* Pantry items display / empty state fallback*/
+  </header>
+
+  <main class="container">
+    <div class="page-header"><h1>Your Groceries</h1></div>
     <div id="pantryDisplay">
-      <div id="emptyState" class="empty-state">
+      <div id="loadingState" class="loading-spinner">Loading your pantry…</div>
+      <div id="emptyState" class="empty-state" style="display: none;">
         <div class="empty-icon">📦</div>
         <h2>Your pantry is empty</h2>
-        <p>Items added here are saved to your browser cookies.</p>
-        <a href="#" class="link-reset" onclick="resetPantry()">Clear All Data</a>
+        <p>Add items using the button below — they're saved to your account.</p>
+        <a href="#" class="link-reset" onclick="clearAllItems()">Clear All Items</a>
       </div>
-//AI expiration predicition trigger
       <div class="predict-container">
         <button id="predictBtn" class="predict-btn" onclick="updatePantryExpirations()">
           ✨ Predict Expirations
         </button>
       </div>
-//Experation report forecast results
-<div id="expiration-report" style="display:none; background: #e0f2f1; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: left; border: 1px solid #2bb39a;">
-  <h3 style="margin-top:0; color: #00897b;">AI Expiration Forecast</h3>
-  <ul id="expiration-list" style="list-style: none; padding: 0; margin: 0;"></ul>
-</div>
+      <div id="expiration-report" style="display:none; background: #e0f2f1; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: left; border: 1px solid #2bb39a;">
+        <h3 style="margin-top:0; color: #00897b;">AI Expiration Forecast</h3>
+        <ul id="expiration-list" style="list-style: none; padding: 0; margin: 0;"></ul>
+      </div>
       <ul id="pantryList"></ul>
     </div>
   </main>
-//Section for Manual Input of items
+
+  <!-- FAB -->
   <div class="fab-container">
     <div class="fab-menu" id="fabMenu">
       <button class="menu-item" onclick="openManualInput()">
-        <span>Manual Input</span>
-        <span class="icon">✍️</span>
+        <span>Manual Input</span><span class="icon">✍️</span>
       </button>
-//Section for uploading image
       <button class="menu-item" id="uploadImageBtn" onclick="openPhotoModal()">
-        <span>Upload Image</span>
-        <span class="icon">📷</span>
+        <span>Upload Image</span><span class="icon">📷</span>
       </button>
     </div>
-
-
-
-//Manual input design
     <input type="file" id="hiddenFileInput" accept="image/*" style="display: none;">
     <button class="fab-add" id="fabAdd">+</button>
   </div>
+
+  <!-- Manual Add Modal -->
   <div id="manualModal" class="modal-overlay">
     <div class="modal-content">
       <h3>Add New Item</h3>
@@ -178,13 +103,12 @@ $initials = substr($initials, 0, 2);
       </div>
       <div class="modal-actions">
         <button class="btn-cancel" onclick="closeManualInput()">Cancel</button>
-        <button class="btn-save" onclick="saveManualInput()">Add to List</button>
+        <button class="btn-save" id="saveBtn" onclick="saveManualInput()">Add to List</button>
       </div>
     </div>
   </div>
 
-
-//Upload input design
+  <!-- Photo Modal -->
   <div id="photoModal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
       <div style="text-align: center; margin-bottom: 20px;">
@@ -192,216 +116,279 @@ $initials = substr($initials, 0, 2);
         <h2 style="margin-top: 10px;">Photo Integration</h2>
         <p style="color: #666; font-size: 14px;">Select an option to add an item via photo.</p>
       </div>
-<div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px; justify-items: center;">
+      <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px; justify-items: center;">
         <button class="secondary-btn" onclick="triggerFileUpload()" style="flex-direction: column; height: auto; padding: 20px; background: #f9f9f9; display: flex; align-items: center; justify-content: center;">
           <span class="material-icons" style="font-size: 32px; margin-bottom: 10px; color: #2bb39a;">upload_file</span>
           <span>Upload Image</span>
         </button>
       </div>
-
       <div style="text-align: center;">
         <button class="btn-cancel" onclick="closePhotoModal()">Cancel</button>
-      </
-div>
+      </div>
     </div>
   </div>
 
   <script>
-    const fabAdd = document.getElementById('fabAdd');
-    const fabMenu = document.getElementById('fabMenu');
-    const pantryList = document.getElementById('pantryList');
-    const emptyState = document.getElementById('emptyState');
+    // ── DOM refs ───────────────────────────────────────────────────────────────
+    const fabAdd        = document.getElementById('fabAdd');
+    const fabMenu       = document.getElementById('fabMenu');
+    const pantryList    = document.getElementById('pantryList');
+    const emptyState    = document.getElementById('emptyState');
+    const loadingState  = document.getElementById('loadingState');
     const hiddenFileInput = document.getElementById('hiddenFileInput');
 
-    // --- FAB Logic ---
+    const API = 'pantry_api.php'; // same directory as dashboard.php
+
+    // ── In-memory cache of items (mirrors the DB) ──────────────────────────────
+    // Each item: { id, name, qty, type }
+    let myItems = [];
+
+    // ── FAB toggle ─────────────────────────────────────────────────────────────
     fabAdd.addEventListener('click', (e) => {
       e.stopPropagation();
       fabMenu.classList.toggle('show');
     });
     document.addEventListener('click', () => { fabMenu.classList.remove('show'); });
 
-    // --- Photo Modal Logic ---
-    function openPhotoModal() {
-      fabMenu.classList.remove('show');
-      document.getElementById('photoModal').style.display = 'flex';
-    }
+    // ── Photo modal ────────────────────────────────────────────────────────────
+    function openPhotoModal()  { fabMenu.classList.remove('show'); document.getElementById('photoModal').style.display = 'flex'; }
     function closePhotoModal() { document.getElementById('photoModal').style.display = 'none'; }
     function triggerFileUpload() { closePhotoModal(); hiddenFileInput.click(); }
 
-    // --- Pantry Functions ---
-    let myItems = getPantryCookie();
-    window.onload = renderPantry;
-
-    function setPantryCookie(data) {
-      const d = new Date();
-      d.setTime(d.getTime() + (30 * 24 * 60 * 60 * 1000));
-      document.cookie = "sk_pantry_data=" + JSON.stringify(data) + ";expires=" + d.toUTCString() + ";path=/";
-    }
-
-    function getPantryCookie() {
-      let name = "sk_pantry_data=";
-      let ca = decodeURIComponent(document.cookie).split(';');
-      for(let i = 0; i < ca.length; i++) {
-        let c = ca[i].trim();
-        if (c.indexOf(name) == 0) return JSON.parse(c.substring(name.length, c.length));
-      }
-      return [];
-    }
-
+    // ── Render ─────────────────────────────────────────────────────────────────
     function renderPantry() {
       pantryList.innerHTML = '';
       if (myItems.length === 0) {
         emptyState.style.display = 'block';
       } else {
         emptyState.style.display = 'none';
-        myItems.forEach((item, index) => {
+        myItems.forEach((item) => {
           const li = document.createElement('li');
           li.className = 'pantry-item';
           li.innerHTML = `
             <div class="pantry-item-info">
-              <span class="pantry-item-name">${item.name}</span><br>
-              <span class="pantry-item-details">Qty: ${item.qty} ${item.type || ''}</span>
+              <span class="pantry-item-name">${escHtml(item.name)}</span><br>
+              <span class="pantry-item-details">Qty: ${escHtml(String(item.qty))} ${escHtml(item.type || '')}</span>
             </div>
-            <button class="btn-delete" onclick="deleteItem(${index})">🗑️</button>
+            <button class="btn-delete" onclick="deleteItem(${item.id})">🗑️</button>
           `;
           pantryList.appendChild(li);
         });
       }
     }
 
-    function openManualInput() {
-        document.getElementById('manualModal').style.display = 'flex';
-        fabMenu.classList.remove('show');
+    function escHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
-    function closeManualInput() { document.getElementById('manualModal').style.display = 'none'; }
 
-    function saveManualInput() {
-      const name = document.getElementById('foodItem').value;
-      const qty = document.getElementById('foodAmount').value;
-      const type = document.getElementById('foodType').value;
-      if (name && qty) {
-        myItems.push({ name, qty, type });
-        setPantryCookie(myItems);
+    // ── Load all items from DB on page load ────────────────────────────────────
+    async function loadPantry() {
+      try {
+        const res = await fetch(API);
+        if (!res.ok) throw new Error('Server error');
+        myItems = await res.json();
+      } catch (e) {
+        console.error('Failed to load pantry:', e);
+        myItems = [];
+      } finally {
+        loadingState.style.display = 'none';
         renderPantry();
-        closeManualInput();
-        document.getElementById('foodItem').value = '';
-        document.getElementById('foodAmount').value = '';
-        document.getElementById('foodType').value = '';
       }
     }
 
-    function deleteItem(index) {
-      myItems.splice(index, 1);
-      setPantryCookie(myItems);
-      renderPantry();
+    window.addEventListener('load', loadPantry);
+
+    // ── Manual add modal ───────────────────────────────────────────────────────
+    function openManualInput() {
+      document.getElementById('manualModal').style.display = 'flex';
+      fabMenu.classList.remove('show');
+    }
+    function closeManualInput() {
+      document.getElementById('manualModal').style.display = 'none';
     }
 
-    function resetPantry() {
+    async function saveManualInput() {
+      const name = document.getElementById('foodItem').value.trim();
+      const qty  = parseFloat(document.getElementById('foodAmount').value) || 1;
+      const type = document.getElementById('foodType').value.trim();
+
+      if (!name) { alert('Please enter a food item name.'); return; }
+
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving…';
+
+      try {
+        const res  = await fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, qty, type })
+        });
+        if (!res.ok) throw new Error('Server error');
+        const saved = await res.json();
+        myItems.push(saved);
+        renderPantry();
+        closeManualInput();
+        document.getElementById('foodItem').value  = '';
+        document.getElementById('foodAmount').value = '';
+        document.getElementById('foodType').value  = '';
+      } catch (e) {
+        alert('Could not save item. Please try again.');
+        console.error(e);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Add to List';
+      }
+    }
+
+    // ── Delete a single item ───────────────────────────────────────────────────
+    async function deleteItem(id) {
+      try {
+        const res = await fetch(`${API}?id=${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Server error');
+        myItems = myItems.filter(item => item.id !== id);
+        renderPantry();
+      } catch (e) {
+        alert('Could not delete item. Please try again.');
+        console.error(e);
+      }
+    }
+
+    // ── Clear all items for this user ──────────────────────────────────────────
+    async function clearAllItems() {
+      if (!confirm('Remove all items from your pantry?')) return;
+      // Delete each item sequentially (avoids needing a separate bulk-delete endpoint)
+      const ids = myItems.map(i => i.id);
+      for (const id of ids) {
+        await fetch(`${API}?id=${id}`, { method: 'DELETE' });
+      }
       myItems = [];
-      setPantryCookie(myItems);
       renderPantry();
     }
 
-    // -- Prediction Logic --
-const API_URL = "api/get-expiration";
-async function updatePantryExpirations() {
-  const listElement = document.getElementById('expiration-list');
-  const reportContainer = document.getElementById('expiration-report');
-  const predictBtn = document.getElementById('predictBtn');
+    // ── AI Expiration Forecast ─────────────────────────────────────────────────
+    const EXPIRATION_API = "api/get-expiration";
 
-  reportContainer.style.display = 'block';
-  listElement.innerHTML = '<li>🪄 ScannoKart AI is calculating...</li>';
-  predictBtn.disabled = true;
+    async function updatePantryExpirations() {
+      const listEl        = document.getElementById('expiration-list');
+      const reportContainer = document.getElementById('expiration-report');
+      const predictBtn    = document.getElementById('predictBtn');
 
-  try {
-    const itemsFromCookie = getPantryCookie();
-    if (itemsFromCookie.length === 0) {
-      listElement.innerHTML = '<li>Your pantry is empty! Add items first.</li>';
-      predictBtn.disabled = false;
-      return;
-    }
+      reportContainer.style.display = 'block';
+      listEl.innerHTML = '<li>🪄 ScannoKart AI is calculating…</li>';
+      predictBtn.disabled = true;
 
-    // Change 1: Ensure this fetch is unique
-    const predictionResponse = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items: itemsFromCookie })
-    });
-
-    if (!predictionResponse.ok) throw new Error("Server error");
-    const predictions = await predictionResponse.json();
-
-    listElement.innerHTML = '';
-    predictions.forEach(item => {
-      const li = document.createElement('li');
-      li.style.padding = "8px 0";
-      li.style.borderBottom = "1px solid #cde8e3";
-      const isUrgent = item.daysToExpiration <= 3;
-      const color = isUrgent ? "#ef4444" : "#444";
-      const icon = isUrgent ? "⚠️" : "🗓️";
-      li.innerHTML = `<span style="color: ${color}; font-weight: ${isUrgent ? 'bold' : 'normal'}">${icon} ${item.name}: ~${item.daysToExpiration} days remaining</span>`;
-      listElement.appendChild(li);
-    });
-  } catch (error) {
-    listElement.innerHTML = '<li style="color: red;">Could not connect to the AI server.</li>';
-  } finally {
-    predictBtn.disabled = false;
-  }
-}
-// --- Auth Check & Header Population ---
-const CURRENT_KEY = "sk_current_user";
-const user = JSON.parse(localStorage.getItem(CURRENT_KEY));
-
-if (false) {
-  // If no session exists, send them back to login
-  window.location.href = "index.html";
-} else {
-  // This takes the data from your login session and puts it in the header
-
-// --- NEW UPLOAD LOGIC STARTS HERE ---
-hiddenFileInput.addEventListener('change', async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-        // 1. Send image to PHP for OCR
-        const uploadResponse = await fetch('upload.php', { method: 'POST', body: formData });
-        const result = await uploadResponse.json();
-
-        if (result.status === "success" && result.ocr_data) {
-            // 2. Send OCR text to Gemini to "beautify" it
-            const geminiResponse = await fetch('api/process-receipt', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ raw_text: result.ocr_data })
-            });
-
-            const cleanItems = await geminiResponse.json();
-
-            // 3. Add the clean items to your pantry
-            cleanItems.forEach(item => {
-                myItems.push({
-                    name: item.name,
-                    qty: item.qty || 1,
-                    type: item.type || "Grocery"
-                });
-            });
-
-            setPantryCookie(myItems);
-            renderPantry();
-            alert("Items added successfully!");
-        } else {
-            alert("OCR failed: " + result.message);
+      try {
+        if (myItems.length === 0) {
+          listEl.innerHTML = '<li>Your pantry is empty! Add items first.</li>';
+          return;
         }
-    } catch (error) {
-        console.error("Workflow Error:", error);
+        const res = await fetch(EXPIRATION_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: myItems })
+        });
+        if (!res.ok) throw new Error('Server error');
+        const predictions = await res.json();
+
+        listEl.innerHTML = '';
+        predictions.forEach(item => {
+          const li = document.createElement('li');
+          li.style.padding = "8px 0";
+          li.style.borderBottom = "1px solid #cde8e3";
+          const isUrgent = item.daysToExpiration <= 3;
+          const color    = isUrgent ? "#ef4444" : "#444";
+          const icon     = isUrgent ? "⚠️" : "🗓️";
+          li.innerHTML = `<span style="color:${color}; font-weight:${isUrgent ? 'bold' : 'normal'}">${icon} ${escHtml(item.name)}: ~${item.daysToExpiration} days remaining</span>`;
+          listEl.appendChild(li);
+        });
+      } catch (e) {
+        listEl.innerHTML = '<li style="color:red;">Could not connect to the AI server.</li>';
+      } finally {
+        predictBtn.disabled = false;
+      }
     }
-    hiddenFileInput.value = '';
-});
-}
+
+    // ── Image / OCR upload ─────────────────────────────────────────────────────
+    hiddenFileInput.addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+	
+	const cleanBlob = await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e) => {
+      const img = new Image();
+      img.src = e.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        // Optional: Resize to a max width to speed up OCR
+        const maxDim = 1200; 
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height && width > maxDim) {
+          height *= maxDim / width;
+          width = maxDim;
+        } else if (height > maxDim) {
+          width *= maxDim / height;
+          height = maxDim;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Export as clean JPEG (strips all EXIF automatically)
+        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.85);
+      };
+    };
+  });
+	
+      const formData = new FormData();
+      formData.append('file', cleanBlob, 'upload.jpg');
+
+      try {
+        const uploadRes = await fetch('upload.php', { method: 'POST', body: formData });
+        const result    = await uploadRes.json();
+
+        if (result.status === 'success' && result.ocr_data) {
+          const geminiRes = await fetch('api/process-receipt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ raw_text: result.ocr_data })
+          });
+          const cleanItems = await geminiRes.json();
+
+          // Bulk-save to DB via POST (send array)
+          const saveRes = await fetch(API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(cleanItems.map(i => ({
+              name: i.name,
+              qty:  i.qty  || 1,
+              type: i.type || 'Grocery'
+            })))
+          });
+          if (!saveRes.ok) throw new Error('Save failed');
+          const saved = await saveRes.json();
+
+          // saved may be a single object or array depending on item count
+          const savedArr = Array.isArray(saved) ? saved : [saved];
+          myItems.push(...savedArr);
+          renderPantry();
+          alert('Items added successfully!');
+        } else {
+          alert('OCR failed: ' + result.message);
+        }
+      } catch (e) {
+        console.error('Workflow Error:', e);
+        alert('An error occurred while processing the image.');
+      }
+
+      hiddenFileInput.value = '';
+    });
   </script>
 </body>
 </html>
