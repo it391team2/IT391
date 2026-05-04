@@ -1,128 +1,91 @@
-# IT391
-Team 2's semester long project for IT391.
+# ScannoKart: AI-Powered Pantry & Inventory Management
 
-# OCR Usage
+ScannoKart is a smart inventory solution designed to bridge the gap between grocery shopping and food waste prevention. By leveraging **OpenOCR** for receipt digitization and **Google Gemini AI** for shelf-life prediction, ScannoKart helps users track their pantry in real-time.
 
-Install Guide for OpenOCR: https://github.com/Topdu/OpenOCR/blob/main/docs/openocr.md#quick-start
+---
 
-**Running OpenOCR** -- output is non human readable and will need to be cleaned with clean.py
+## 🛠 Core Technologies
+*   **OCR:** [OpenOCR](https://github.com/Topdu/OpenOCR) for high-accuracy text extraction.
+*   **AI:** Google Gemini (Generative AI) for intelligent expiration estimation.
+*   **Backend:** Node.js with Express, managed by **PM2**.
+*   **Frontend:** Secure Dashboard with local browser-based authentication.
+*   **Web Server:** Nginx 1.24.0.
+
+---
+
+## 🚀 Installation & Environment Setup
+
+### 1. Repository & Dependencies
+Clone the project and install the Node.js environment:
 ```sh
-# With visualization
-openocr --task ocr --input_path path/to/img --is_vis
+git clone https://github.com/it391team2/IT391.git
+cd IT391
+npm install @google/generative-ai express cors dotenv
 ```
 
-**Example of Visualisation**
-<img width="2430" height="1620" alt="image" src="https://github.com/user-attachments/assets/16cc6891-d906-4c7a-81ba-e3cc0d5f0f21" />
+### 2. OCR Engine Configuration
+Install the OpenOCR engine by following the [Official Quick Start Guide](https://github.com/Topdu/OpenOCR/blob/main/docs/openocr.md#quick-start). This is required to process physical receipt images into text.
 
-**clean.py Usage**
-```sh
-python3 clean.py system_results.txt
-```
-**clean.py output**
-```
-Shop-No S+ 319 North Street
-Norma1
-IL,61761
-(309)452-7400
-1604mgr@fheg.fo1lett.com
-RedbirdSpiritShop.com
-ITEM QTY PRICE TOTAL
-MILKA OREO BROWNIE BAR3.50Z
-030299550 1@ $3.49 $3.49 T
-STARBUCKS 150Z DBL MOCHA COFF
-011591729 1@ $3.99 $3.99 T
-Subtotal $7.48
-Total Sales Tax $0.59
-Total $8.07
-Credit $8.07
-Card:Visa
-Account:0927
-Auth:413359
-Application ID:a0000000980840
-Application Name:US DEBIT
-TVR:0000000000
-IAD:1f42ff60a00000000010030273000000004
-0OOOOOOOOOOOOOOOOOOOOOOO0OOOO
-PAN SegNo.:00
-Audit Trace No.:61098634
-Verification:Signature
-Capture Method:Wave
-@6.250% $0.25 6.250 US-IL
-$034 9.750 @9 750% 1O
-```
-
-
-
-# ScannoKart – Front-End Overview
-
-
-**Authentication & Dashboard Flow**
-
-The current front-end build of ScannoKart includes a fully functional login interface that transitions seamlessly into the main dashboard.
-
-**Login Page**
-
-Users are presented with a clean authentication screen.
-
-The system verifies whether an account exists in the browser before allowing access.
-
-Login attempts will fail if the account has not been created.
-
-This prevents unauthorized access to the dashboard environment.
-
-**Account Requirement**
-
-A user must first create an account before logging in.
-
-The application validates stored account credentials within the browser.
-
-If no matching account exists, access is denied.
-
-**Dashboard Transition**
-
-Upon successful login, users are automatically redirected to the ScannoKart Main Dashboard.
-
-The logged-in user’s name is displayed in the top-right corner of the dashboard interface.
-
-This provides clear session visibility and confirms active authentication.
-
-# AI Integration (Shelf-life Estimation)
-nginx 1.24.0-2ubuntu7.6 
-
-**Requirements**
-```
-$ npm install @google/generative-ai express
-$ npm install cors
-$ npm install dotenv
-```
-Create a .env file and put the following.
-```
+### 3. API Key Configuration
+Create a `.env` file in the root directory:
+```bash
 GEMINI_API_KEY=<YOUR_GEMINI_KEY>
 ```
 
-**Running estimation.js**
-First Start by installing the estimation.js script and run with the following command
-```
-$ node estimation.js
-// And test with the following line
-$ curl -X POST http://localhost:3000/get-expiration -H "Content-Type: application/json" -d '{"items": [{"name":"Apples","qty":"8"}]}'
+---
+
+## 🖥 Deployment (Hosting with PM2)
+
+We use **PM2** to ensure the estimation API runs as a background service and persists through system reboots.
+
+```sh
+# Install PM2 globally
+sudo npm install -g pm2
+
+# Start the AI Estimation service
+pm2 start estimation.js --name scannokart-api
+
+# Configure PM2 to start on boot
+pm2 startup
+pm2 save
 ```
 
-We need to run the estimation.js script by itself, you can start it by running the following.
-```
-$ npm install -g pm2
-$ pm2 start estimation.js --name scannokart-api
-$ pm2 startup
+---
 
+## 🔄 The ScannoKart Workflow
+
+### Step 1: Receipt Processing
+Capture an image of your receipt and run the OCR task. The raw output is then passed through a cleaning script to format the data for the AI.
+```sh
+# 1. Extract text from image
+openocr --task ocr --input_path ./receipt.jpg --is_vis
+
+# 2. Clean and format the results
+python3 clean.py system_results.txt
 ```
 
-**AI Model (GEMINI FLASH 2.5)**
-System prompt
+### Step 2: AI Shelf-Life Estimation
+The cleaned data is sent to the Gemini-powered endpoint. The AI analyzes the items (e.g., "Apples") and returns a structured JSON response predicting how many days until expiration.
+```sh
+# Test the endpoint via CURL
+curl -X POST http://localhost:3000/get-expiration \
+     -H "Content-Type: application/json" \
+     -d '{"items": [{"name":"Apples","qty":"8"}]}'
 ```
- const prompt = `Analyze this pantry list: ${itemString}. 
-        Return a JSON array of objects with "name" and "daysToExpiration" (as a number).
-        Only return the JSON code, no extra text.`;
-```
-# Contributors
 
-Adam C, Alex FP, Ethan Causa, William Slaughter, Jackson Newton, Juan Munoz 
+### Step 3: Dashboard Management
+*   **Secure Access:** Users must create a local account to access the dashboard. 
+*   **Session Visibility:** Once authenticated, the dashboard displays your active inventory and highlights items nearing their expiration date.
+
+---
+
+## 👥 Contributors (Team 2)
+*   **Adam C.**
+*   **Alex FP**
+*   **Ethan Causa**
+*   **William Slaughter**
+*   **Jackson Newton**
+*   **Juan Munoz**
+
+---
+*Developed for IT391 @ Illinois State University*
